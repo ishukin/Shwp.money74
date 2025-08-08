@@ -4,657 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>TapSwap</title>
-    <!-- We will use the Telegram WebApp script in a real environment -->
-    <!-- <script src="https://telegram.org/js/telegram-web-app.js"></script> -->
+    
+    <script src='//libtl.com/sdk.js' data-zone='9685002' data-sdk='show_9685002'></script>
+    
     <style>
         :root {
-            --bg-color: #121212;
-            --primary-color: #f0b90b;
-            --secondary-color: #252525;
-            --text-color: #ffffff;
-            --text-secondary-color: #888888;
-            --cat-bg: #333333;
-            --energy-bar-bg: #444444;
-            --success-color: #2ebd85;
-            --error-color: #f6465d;
+            --bg-color: #121212; --primary-color: #f0b90b; --secondary-color: #252525;
+            --text-color: #ffffff; --text-secondary-color: #888888; --cat-bg: #333333;
+            --energy-bar-bg: #444444; --success-color: #2ebd85; --error-color: #f6465d;
         }
-
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            overflow: hidden;
-            -webkit-user-select: none; /* Safari */
-            -ms-user-select: none; /* IE 10+ */
-            user-select: none; /* Standard syntax */
-        }
-
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            width: 100%;
-            max-width: 500px; /* Typical for mobile webapps */
-            margin: 0 auto;
-            box-sizing: border-box;
-        }
-
-        main {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            position: relative; /* For page stacking */
-        }
-
-        .page {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-            padding: 20px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .page.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* Bottom Navigation Bar */
-        .bottom-nav {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            background-color: var(--secondary-color);
-            border-top: 1px solid var(--primary-color);
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            max-width: 500px;
-            height: 60px;
-            z-index: 1000;
-        }
-
-        .nav-button {
-            background: none;
-            border: none;
-            color: var(--text-secondary-color);
-            font-size: 14px;
-            cursor: pointer;
-            padding: 10px;
-            flex-grow: 1;
-            transition: color 0.2s, background-color 0.2s;
-        }
-
-        .nav-button.active {
-            color: var(--primary-color);
-            background-color: rgba(240, 185, 11, 0.1);
-        }
-
-        /* Tap Page */
-        #tap-page {
-            justify-content: space-around;
-        }
-        
-        .points-display {
-            font-size: 48px;
-            font-weight: 700;
-            color: var(--text-color);
-            text-shadow: 0 0 10px var(--primary-color);
-        }
-        
-        .cat-container {
-            width: 250px;
-            height: 250px;
-            border-radius: 50%;
-            background: var(--cat-bg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-            box-shadow: 0 0 20px rgba(240, 185, 11, 0.5);
-            position: relative;
-        }
-
-        .cat-container.tapped {
-            transform: scale(0.95);
-        }
-        
-        .cat-emoji {
-            font-size: 150px;
-        }
-
-        .tap-feedback {
-            position: absolute;
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-            opacity: 0;
-            animation: float-up 1s ease-out forwards;
-            pointer-events: none;
-        }
-
-        @keyframes float-up {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-        }
-        
-        .energy-section {
-            width: 100%;
-            text-align: center;
-        }
-        
-        .energy-bar-container {
-            width: 90%;
-            height: 20px;
-            background-color: var(--energy-bar-bg);
-            border-radius: 10px;
-            margin: 10px auto;
-            overflow: hidden;
-            border: 1px solid var(--text-secondary-color);
-        }
-        
-        #energy-bar-fill {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, #f0b90b, #ffd700);
-            border-radius: 10px;
-            transition: width 0.5s ease-in-out;
-        }
-
-        #energy-level-text {
-            font-size: 16px;
-        }
-        
-        /* Profile Page */
-        .profile-card {
-            background-color: var(--secondary-color);
-            padding: 20px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 400px;
-            text-align: left;
-        }
-        
-        .profile-card h2 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-top: 0;
-        }
-
-        .profile-info {
-            margin-top: 15px;
-        }
-
-        .profile-info p {
-            margin: 10px 0;
-            font-size: 16px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .profile-info strong {
-            color: var(--text-secondary-color);
-        }
-        
-        .profile-info span {
-            color: var(--text-color);
-        }
-
-        #referral-link {
-            word-break: break-all;
-            background: var(--bg-color);
-            padding: 5px;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        /* Task Page */
-        #task-list {
-            width: 100%;
-            list-style: none;
-            padding: 0;
-        }
-
-        .task-item {
-            background-color: var(--secondary-color);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .task-info p {
-            margin: 0;
-        }
-
-        .task-info .points {
-            font-size: 12px;
-            color: var(--primary-color);
-        }
-
-        .task-button {
-            background-color: var(--primary-color);
-            color: var(--bg-color);
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .task-button:hover {
-            background-color: #d8a60a;
-        }
-        
-        .task-button:disabled {
-            background-color: var(--success-color);
-            color: var(--text-color);
-            cursor: not-allowed;
-        }
-
-        /* Withdraw Page */
-        .withdraw-form {
-            background-color: var(--secondary-color);
-            padding: 20px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 400px;
-        }
-        
-        .withdraw-form h2 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-top: 0;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--text-secondary-color);
-        }
-        
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            box-sizing: border-box;
-            background-color: var(--bg-color);
-            border: 1px solid var(--text-secondary-color);
-            border-radius: 5px;
-            color: var(--text-color);
-            font-size: 16px;
-        }
-        
-        #withdraw-button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary-color);
-            color: var(--bg-color);
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        #withdraw-button:hover {
-            background-color: #d8a60a;
-        }
-
-        .message {
-            text-align: center;
-            padding: 10px;
-            margin-top: 15px;
-            border-radius: 5px;
-            display: none;
-        }
-        .message.success {
-            background-color: var(--success-color);
-            color: var(--text-color);
-        }
-        .message.error {
-            background-color: var(--error-color);
-            color: var(--text-color);
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; -webkit-user-select: none; -ms-user-select: none; user-select: none; }
+        .app-container { display: flex; flex-direction: column; height: 100vh; width: 100%; max-width: 500px; margin: 0 auto; box-sizing: border-box; }
+        main { flex-grow: 1; padding: 20px; overflow-y: auto; position: relative; }
+        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; box-sizing: border-box; padding: 20px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out, visibility 0.3s; display: flex; flex-direction: column; align-items: center; }
+        .page.active { opacity: 1; visibility: visible; }
+        .bottom-nav { display: flex; justify-content: space-around; align-items: center; background-color: var(--secondary-color); border-top: 1px solid var(--primary-color); position: fixed; bottom: 0; width: 100%; max-width: 500px; height: 60px; z-index: 1000; }
+        .nav-button { background: none; border: none; color: var(--text-secondary-color); font-size: 14px; cursor: pointer; padding: 10px; flex-grow: 1; transition: color 0.2s, background-color 0.2s; }
+        .nav-button.active { color: var(--primary-color); background-color: rgba(240, 185, 11, 0.1); }
+        #tap-page { justify-content: space-around; }
+        .points-display { font-size: 48px; font-weight: 700; color: var(--text-color); text-shadow: 0 0 10px var(--primary-color); }
+        .cat-container { width: 250px; height: 250px; border-radius: 50%; background: var(--cat-bg); display: flex; justify-content: center; align-items: center; cursor: pointer; transition: transform 0.1s ease; box-shadow: 0 0 20px rgba(240, 185, 11, 0.5); position: relative; }
+        .cat-container.tapped { transform: scale(0.95); }
+        .cat-emoji { font-size: 150px; }
+        .tap-feedback { position: absolute; font-size: 24px; font-weight: bold; color: var(--primary-color); opacity: 0; animation: float-up 1s ease-out forwards; pointer-events: none; }
+        @keyframes float-up { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-50px); } }
+        .energy-section { width: 100%; text-align: center; }
+        .energy-bar-container { width: 90%; height: 20px; background-color: var(--energy-bar-bg); border-radius: 10px; margin: 10px auto; overflow: hidden; border: 1px solid var(--text-secondary-color); }
+        #energy-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #f0b90b, #ffd700); border-radius: 10px; transition: width 0.5s ease-in-out; }
+        #energy-level-text { font-size: 16px; }
+        .profile-card, .withdraw-form { background-color: var(--secondary-color); padding: 20px; border-radius: 15px; width: 90%; max-width: 400px; text-align: left; }
+        .profile-card h2, .withdraw-form h2 { text-align: center; color: var(--primary-color); margin-top: 0; }
+        .profile-info { margin-top: 15px; }
+        .profile-info p { margin: 10px 0; font-size: 16px; display: flex; justify-content: space-between; }
+        .profile-info strong { color: var(--text-secondary-color); }
+        .profile-info span { color: var(--text-color); }
+        #referral-link { word-break: break-all; background: var(--bg-color); padding: 5px; border-radius: 5px; font-size: 14px; cursor: pointer; }
+        #task-list { width: 100%; list-style: none; padding: 0; }
+        .task-item { background-color: var(--secondary-color); padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .task-info p { margin: 0; }
+        .task-info .points { font-size: 12px; color: var(--primary-color); }
+        .task-button { background-color: var(--primary-color); color: var(--bg-color); border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        .task-button:hover { background-color: #d8a60a; }
+        .task-button:disabled { background-color: var(--success-color); color: var(--text-color); cursor: not-allowed; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--text-secondary-color); }
+        .form-group input, .form-group select { width: 100%; padding: 10px; box-sizing: border-box; background-color: var(--bg-color); border: 1px solid var(--text-secondary-color); border-radius: 5px; color: var(--text-color); font-size: 16px; }
+        #withdraw-button { width: 100%; padding: 12px; background-color: var(--primary-color); color: var(--bg-color); border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        #withdraw-button:hover { background-color: #d8a60a; }
+        .message { text-align: center; padding: 10px; margin-top: 15px; border-radius: 5px; display: none; }
+        .message.success { background-color: var(--success-color); color: var(--text-color); }
+        .message.error { background-color: var(--error-color); color: var(--text-color); }
+        #ad-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .ad-container { background-color: #fff; color: #000; padding: 20px; border-radius: 10px; text-align: center; width: 80%; max-width: 350px; }
+        .ad-container h3 { margin-top: 0; }
+        #close-ad-button { background-color: var(--primary-color); color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
-
     <div class="app-container">
         <main>
-            <!-- Profile Page -->
-            <div id="profile-page" class="page">
-                <div class="profile-card">
-                    <h2>Profile</h2>
-                    <div class="profile-info">
-                        <p><strong>User:</strong> <span id="profile-name"></span></p>
-                        <p><strong>Total Points:</strong> <span id="profile-points"></span></p>
-                        <p><strong>Joined:</strong> <span id="profile-join-date"></span></p>
-                        <p><strong>Referral Link:</strong></p>
-                        <span id="referral-link" title="Click to copy"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tap Page -->
-            <div id="tap-page" class="page active">
-                <div class="points-display-container">
-                    <span class="points-display" id="points-display">0</span>
-                </div>
-
-                <div class="cat-container" id="cat-container">
-                    <span class="cat-emoji">🐱</span>
-                </div>
-                
-                <div class="energy-section">
-                    <span id="energy-level-text">100 / 100</span>
-                    <div class="energy-bar-container">
-                        <div id="energy-bar-fill"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Task Page -->
-            <div id="task-page" class="page">
-                <h2>Tasks</h2>
-                <ul id="task-list">
-                    <!-- Tasks will be dynamically inserted here -->
-                </ul>
-            </div>
-
-            <!-- Withdraw Page -->
-            <div id="withdraw-page" class="page">
-                <div class="withdraw-form">
-                    <h2>Withdraw Points</h2>
-                    <p style="text-align: center; color: var(--text-secondary-color);">Your Points: <span id="withdraw-current-points"></span></p>
-                    <form id="withdraw-form-element">
-                        <div class="form-group">
-                            <label for="withdraw-amount">Amount</label>
-                            <input type="number" id="withdraw-amount" placeholder="Enter amount to withdraw" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="withdraw-method">Method</label>
-                            <select id="withdraw-method" required>
-                                <option value="paypal">PayPal</option>
-                                <option value="wire">Wired Transfer</option>
-                                <option value="crypto">Crypto (USDT)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="payment-details">Payment Details</label>
-                            <input type="text" id="payment-details" placeholder="e.g., your@email.com or Bank Account" required>
-                        </div>
-                        <button type="submit" id="withdraw-button">Withdraw</button>
-                    </form>
-                    <div id="withdraw-message" class="message"></div>
-                </div>
-            </div>
+            <div id="profile-page" class="page"><div class="profile-card"><h2>Profile</h2><div class="profile-info"><p><strong>User:</strong> <span id="profile-name"></span></p><p><strong>Total Points:</strong> <span id="profile-points"></span></p><p><strong>Joined:</strong> <span id="profile-join-date"></span></p><p><strong>Referral Link:</strong></p><span id="referral-link" title="Click to copy"></span></div></div></div>
+            <div id="tap-page" class="page active"><div class="points-display-container"><span class="points-display" id="points-display">0</span></div><div class="cat-container" id="cat-container"><span class="cat-emoji">🐱</span></div><div class="energy-section"><span id="energy-level-text">100 / 100</span><div class="energy-bar-container"><div id="energy-bar-fill"></div></div></div></div>
+            <div id="task-page" class="page"><h2>Tasks</h2><ul id="task-list"></ul></div>
+            <div id="withdraw-page" class="page"><div class="withdraw-form"><h2>Withdraw Points</h2><p style="text-align: center; color: var(--text-secondary-color);">Your Points: <span id="withdraw-current-points"></span></p><form id="withdraw-form-element"><div class="form-group"><label for="withdraw-amount">Amount</label><input type="number" id="withdraw-amount" placeholder="Enter amount to withdraw" required></div><div class="form-group"><label for="withdraw-method">Method</label><select id="withdraw-method" required><option value="paypal">PayPal</option><option value="upi">UPI</option><option value="wire">Wired Transfer</option><option value="crypto">Crypto (USDT)</option></select></div><div class="form-group"><label for="payment-details">Payment Details</label><input type="text" id="payment-details" placeholder="your@email.com" required></div><button type="submit" id="withdraw-button">Withdraw</button></form><div id="withdraw-message" class="message"></div></div></div>
         </main>
-
-        <nav class="bottom-nav">
-            <button class="nav-button" data-page="profile-page">Profile</button>
-            <button class="nav-button active" data-page="tap-page">Tap</button>
-            <button class="nav-button" data-page="task-page">Task</button>
-            <button class="nav-button" data-page="withdraw-page">Withdraw</button>
-        </nav>
+        <nav class="bottom-nav"><button class="nav-button" data-page="profile-page">Profile</button><button class="nav-button active" data-page="tap-page">Tap</button><button class="nav-button" data-page="task-page">Task</button><button class="nav-button" data-page="withdraw-page">Withdraw</button></nav>
     </div>
+    <div id="ad-overlay"><div class="ad-container"><h3>Advertisement</h3><p>This is a simulated ad. In a real app, a video or banner from Monetag would show here.</p><p>Please wait for the ad to finish...</p><button id="close-ad-button">Close Ad & Get Reward</button></div></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- STATE MANAGEMENT ---
-            let gameState = {
-                points: 0,
-                energy: 1000,
-                maxEnergy: 1000,
-                energyPerTap: 1,
-                energyRefillRate: 1, // energy per second
-                userName: 'Telegram User', // Placeholder
-                joinDate: new Date().toLocaleDateString(),
-                referralCode: 'REF' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-                completedTasks: []
-            };
-
-            const tasks = [
-                { id: 'yt1', title: 'Watch Video #1', points: 1000, url: 'https://www.youtube.com' },
-                { id: 'yt2', title: 'Watch Video #2', points: 1000, url: 'https://www.youtube.com' },
-                { id: 'yt3', title: 'Watch Video #3', points: 1000, url: 'https://www.youtube.com' },
-                { id: 'yt4', title: 'Watch Video #4', points: 1000, url: 'https://www.youtube.com' },
-                { id: 'yt5', title: 'Watch Video #5', points: 1000, url: 'https://www.youtube.com' }
-            ];
-
-            // --- LOCAL STORAGE ---
-            function saveGameState() {
-                try {
-                    localStorage.setItem('tapSwapGameState', JSON.stringify(gameState));
-                } catch (e) {
-                    console.error("Could not save game state:", e);
-                }
-            }
-
-            function loadGameState() {
-                try {
-                    const savedState = localStorage.getItem('tapSwapGameState');
-                    if (savedState) {
-                        const loaded = JSON.parse(savedState);
-                        // Merge loaded state with defaults to handle new properties
-                        gameState = { ...gameState, ...loaded };
-                    } else {
-                        // This is a new user, get user info from Telegram if available
-                        // if (window.Telegram && window.Telegram.WebApp) {
-                        //     const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-                        //     if (tgUser) {
-                        //         gameState.userName = tgUser.first_name || 'User';
-                        //     }
-                        // }
-                        saveGameState();
-                    }
-                } catch (e) {
-                    console.error("Could not load game state:", e);
-                    // If loading fails, start with a fresh state
-                    saveGameState();
-                }
-            }
-
-            // --- DOM ELEMENTS ---
-            const pages = document.querySelectorAll('.page');
-            const navButtons = document.querySelectorAll('.nav-button');
-            const pointsDisplay = document.getElementById('points-display');
-            const catContainer = document.getElementById('cat-container');
-            const energyBarFill = document.getElementById('energy-bar-fill');
-            const energyLevelText = document.getElementById('energy-level-text');
-            const profileName = document.getElementById('profile-name');
-            const profilePoints = document.getElementById('profile-points');
-            const profileJoinDate = document.getElementById('profile-join-date');
-            const referralLink = document.getElementById('referral-link');
-            const taskList = document.getElementById('task-list');
-            const withdrawCurrentPoints = document.getElementById('withdraw-current-points');
-            const withdrawForm = document.getElementById('withdraw-form-element');
-            const withdrawAmountInput = document.getElementById('withdraw-amount');
-            const withdrawMessage = document.getElementById('withdraw-message');
-
-            // --- UI UPDATE FUNCTIONS ---
-            function updateUI() {
-                pointsDisplay.textContent = Math.floor(gameState.points).toLocaleString();
-                profilePoints.textContent = Math.floor(gameState.points).toLocaleString();
-                withdrawCurrentPoints.textContent = Math.floor(gameState.points).toLocaleString();
-                const energyPercentage = (gameState.energy / gameState.maxEnergy) * 100;
-                energyBarFill.style.width = `${energyPercentage}%`;
-                energyLevelText.textContent = `${Math.floor(gameState.energy)} / ${gameState.maxEnergy}`;
-                profileName.textContent = gameState.userName;
-                profileJoinDate.textContent = gameState.joinDate;
-                referralLink.textContent = `https://t.me/your_bot?start=${gameState.referralCode}`;
-            }
-
-            function renderTasks() {
-                taskList.innerHTML = '';
-                tasks.forEach(task => {
-                    const isCompleted = gameState.completedTasks.includes(task.id);
-                    const li = document.createElement('li');
-                    li.className = 'task-item';
-                    li.innerHTML = `
-                        <div class="task-info">
-                            <p>${task.title}</p>
-                            <p class="points">+${task.points.toLocaleString()} Points</p>
-                        </div>
-                        <button class="task-button" data-task-id="${task.id}" ${isCompleted ? 'disabled' : ''}>
-                            ${isCompleted ? 'Completed' : 'Go'}
-                        </button>
-                    `;
-                    taskList.appendChild(li);
-                });
-            }
-
-            // --- NAVIGATION ---
-            function showPage(pageId) {
-                pages.forEach(page => page.classList.remove('active'));
-                document.getElementById(pageId).classList.add('active');
-                navButtons.forEach(button => {
-                    button.classList.toggle('active', button.dataset.page === pageId);
-                });
-                if (pageId === 'task-page') renderTasks();
-            }
-
-            navButtons.forEach(button => {
-                button.addEventListener('click', () => showPage(button.dataset.page));
-            });
-
-            // --- TAP LOGIC ---
-            function handleTap(event) {
-                if (gameState.energy >= gameState.energyPerTap) {
-                    gameState.points += 1;
-                    gameState.energy -= gameState.energyPerTap;
-                    
-                    const feedback = document.createElement('div');
-                    feedback.className = 'tap-feedback';
-                    feedback.textContent = '+1';
-                    
-                    const rect = catContainer.getBoundingClientRect();
-                    const x = (event.clientX || event.touches[0].clientX) - rect.left;
-                    const y = (event.clientY || event.touches[0].clientY) - rect.top;
-                    feedback.style.left = `${x}px`;
-                    feedback.style.top = `${y}px`;
-
-                    catContainer.appendChild(feedback);
-                    setTimeout(() => feedback.remove(), 1000);
-
-                    catContainer.classList.add('tapped');
-                    setTimeout(() => catContainer.classList.remove('tapped'), 100);
-
-                    updateUI();
-                }
-            }
-
-            catContainer.addEventListener('click', handleTap);
-            catContainer.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                handleTap(e);
-            }, { passive: false });
-
-            // --- ENERGY REFILL LOGIC ---
-            setInterval(() => {
-                if (gameState.energy < gameState.maxEnergy) {
-                    gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + gameState.energyRefillRate);
-                    updateUI();
-                }
-            }, 1000);
-            
+            let gameState = { points: 0, energy: 1000, maxEnergy: 1000, energyPerTap: 1, energyRefillRate: 1, userName: 'Telegram User', joinDate: new Date().toLocaleDateString(), referralCode: 'REF' + Math.random().toString(36).substring(2, 8).toUpperCase(), completedTasks: [] };
+            const tasks = [ { id: 'yt1', title: 'Watch Video #1', points: 1000 }, { id: 'yt2', title: 'Watch Video #2', points: 1000 }, { id: 'yt3', title: 'Watch Video #3', points: 1000 }, { id: 'yt4', title: 'Watch Video #4', points: 1000 }, { id: 'yt5', title: 'Watch Video #5', points: 1000 } ];
+            function saveGameState() { try { localStorage.setItem('tapSwapGameState', JSON.stringify(gameState)); } catch (e) { console.error("Could not save game state:", e); } }
+            function loadGameState() { try { const savedState = localStorage.getItem('tapSwapGameState'); if (savedState) { gameState = { ...gameState, ...JSON.parse(savedState) }; } else { saveGameState(); } } catch (e) { console.error("Could not load game state:", e); saveGameState(); } }
+            const pages = document.querySelectorAll('.page'); const navButtons = document.querySelectorAll('.nav-button'); const pointsDisplay = document.getElementById('points-display'); const catContainer = document.getElementById('cat-container'); const energyBarFill = document.getElementById('energy-bar-fill'); const energyLevelText = document.getElementById('energy-level-text'); const profileName = document.getElementById('profile-name'); const profilePoints = document.getElementById('profile-points'); const profileJoinDate = document.getElementById('profile-join-date'); const referralLink = document.getElementById('referral-link'); const taskList = document.getElementById('task-list'); const withdrawCurrentPoints = document.getElementById('withdraw-current-points'); const withdrawForm = document.getElementById('withdraw-form-element'); const withdrawAmountInput = document.getElementById('withdraw-amount'); const withdrawMethodSelect = document.getElementById('withdraw-method'); const paymentDetailsInput = document.getElementById('payment-details'); const withdrawMessage = document.getElementById('withdraw-message'); const adOverlay = document.getElementById('ad-overlay'); const closeAdButton = document.getElementById('close-ad-button');
+            function updateUI() { pointsDisplay.textContent = Math.floor(gameState.points).toLocaleString(); profilePoints.textContent = Math.floor(gameState.points).toLocaleString(); withdrawCurrentPoints.textContent = Math.floor(gameState.points).toLocaleString(); const energyPercentage = (gameState.energy / gameState.maxEnergy) * 100; energyBarFill.style.width = `${energyPercentage}%`; energyLevelText.textContent = `${Math.floor(gameState.energy)} / ${gameState.maxEnergy}`; profileName.textContent = gameState.userName; profileJoinDate.textContent = gameState.joinDate; referralLink.textContent = `https://t.me/your_bot?start=${gameState.referralCode}`; }
+            function renderTasks() { taskList.innerHTML = ''; tasks.forEach(task => { const isCompleted = gameState.completedTasks.includes(task.id); const li = document.createElement('li'); li.className = 'task-item'; li.innerHTML = `<div class="task-info"><p>${task.title}</p><p class="points">+${task.points.toLocaleString()} Points</p></div><button class="task-button" data-task-id="${task.id}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Completed' : 'Go'}</button>`; taskList.appendChild(li); }); }
+            function showPage(pageId) { pages.forEach(page => page.classList.remove('active')); document.getElementById(pageId).classList.add('active'); navButtons.forEach(button => button.classList.toggle('active', button.dataset.page === pageId)); if (pageId === 'task-page') renderTasks(); }
+            navButtons.forEach(button => button.addEventListener('click', () => showPage(button.dataset.page)));
+            function handleTap(event) { if (gameState.energy >= gameState.energyPerTap) { gameState.points += 1; gameState.energy -= gameState.energyPerTap; const feedback = document.createElement('div'); feedback.className = 'tap-feedback'; feedback.textContent = '+1'; const rect = catContainer.getBoundingClientRect(); const x = (event.clientX || event.touches[0].clientX) - rect.left; const y = (event.clientY || event.touches[0].clientY) - rect.top; feedback.style.left = `${x}px`; feedback.style.top = `${y}px`; catContainer.appendChild(feedback); setTimeout(() => feedback.remove(), 1000); catContainer.classList.add('tapped'); setTimeout(() => catContainer.classList.remove('tapped'), 100); updateUI(); } }
+            catContainer.addEventListener('click', handleTap); catContainer.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e); }, { passive: false });
+            setInterval(() => { if (gameState.energy < gameState.maxEnergy) { gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + gameState.energyRefillRate); updateUI(); } }, 1000);
             setInterval(saveGameState, 5000);
-
-            // --- TASK LOGIC ---
+            function completeTask(taskId) { const task = tasks.find(t => t.id === taskId); if (task && !gameState.completedTasks.includes(taskId)) { gameState.points += task.points; gameState.completedTasks.push(taskId); saveGameState(); updateUI(); renderTasks(); alert(`Congratulations! You have earned ${task.points} points.`); } }
             taskList.addEventListener('click', (e) => {
                 if (e.target.classList.contains('task-button') && !e.target.disabled) {
                     const taskId = e.target.dataset.taskId;
-                    const task = tasks.find(t => t.id === taskId);
                     
-                    if (task && !gameState.completedTasks.includes(taskId)) {
-                        alert(`Simulating watching video. You will now receive ${task.points} points.`);
-                        gameState.points += task.points;
-                        gameState.completedTasks.push(taskId);
-                        e.target.disabled = true;
-                        e.target.textContent = 'Completed';
-                        updateUI();
-                        saveGameState();
-                    }
+                    
+// In-App Interstitial
+
+show_9685002({
+  type: 'inApp',
+  inAppSettings: {
+    frequency: 2,
+    capping: 0.1,
+    interval: 30,
+    timeout: 5,
+    everyPage: false
+  }
+})
+
+/*
+This value is decoded as follows:
+- show automatically 2 ads
+  within 0.1 hours (6 minutes)
+  with a 30-second interval between them
+  and a 5-second delay before the first one is shown.
+  The last digit, 0, means that the session will be saved when you navigate between pages.
+  If you set the last digit as 1, then at any transition between pages,
+  the session will be reset, and the ads will start again.
+*/
+*******************************************
+
+                    // --- Simulation Start (Ise aap Monetag ke asli code se badal sakte hain) ---
+                    adOverlay.style.display = 'flex';
+                    closeAdButton.dataset.taskId = taskId;
+                    // --- Simulation End ---
                 }
             });
-
-            // --- WITHDRAW LOGIC ---
-            withdrawForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const amount = parseFloat(withdrawAmountInput.value);
-                const method = document.getElementById('withdraw-method').value;
-                const details = document.getElementById('payment-details').value;
-
-                withdrawMessage.style.display = 'none';
-
-                if (isNaN(amount) || amount <= 0) {
-                    showWithdrawMessage('Please enter a valid amount.', 'error');
-                    return;
-                }
-                if (amount > gameState.points) {
-                    showWithdrawMessage('Insufficient points.', 'error');
-                    return;
-                }
-                if (!details.trim()) {
-                    showWithdrawMessage('Please provide payment details.', 'error');
-                    return;
-                }
-
-                gameState.points -= amount;
-                updateUI();
-                saveGameState();
-                showWithdrawMessage(`Successfully initiated withdrawal of ${amount} points to ${method}.`, 'success');
-                withdrawForm.reset();
-            });
-
-            function showWithdrawMessage(text, type) {
-                withdrawMessage.textContent = text;
-                withdrawMessage.className = `message ${type}`;
-                withdrawMessage.style.display = 'block';
-            }
-            
-            // --- PROFILE LOGIC ---
-            referralLink.addEventListener('click', () => {
-                navigator.clipboard.writeText(referralLink.textContent)
-                    .then(() => alert('Referral link copied to clipboard!'))
-                    .catch(err => console.error('Failed to copy text: ', err));
-            });
-
-            // --- INITIALIZATION ---
-            loadGameState();
-            updateUI();
-            showPage('tap-page');
+            closeAdButton.addEventListener('click', () => { adOverlay.style.display = 'none'; const taskId = closeAdButton.dataset.taskId; if (taskId) { completeTask(taskId); } });
+            withdrawMethodSelect.addEventListener('change', () => { const selectedMethod = withdrawMethodSelect.value; if (selectedMethod === 'upi') { paymentDetailsInput.placeholder = 'Aapki UPI ID daalein (e.g., user@okicici)'; } else if (selectedMethod === 'paypal') { paymentDetailsInput.placeholder = 'Aapka PayPal email daalein'; } else if (selectedMethod === 'wire') { paymentDetailsInput.placeholder = 'Bank Account Details'; } else if (selectedMethod === 'crypto') { paymentDetailsInput.placeholder = 'USDT Wallet Address (TRC20)'; } });
+            withdrawForm.addEventListener('submit', (e) => { e.preventDefault(); const amount = parseFloat(withdrawAmountInput.value); const details = paymentDetailsInput.value; withdrawMessage.style.display = 'none'; if (isNaN(amount) || amount <= 0) { showWithdrawMessage('Please enter a valid amount.', 'error'); return; } if (amount > gameState.points) { showWithdrawMessage('Insufficient points.', 'error'); return; } if (!details.trim()) { showWithdrawMessage('Please provide payment details.', 'error'); return; } gameState.points -= amount; updateUI(); saveGameState(); showWithdrawMessage(`Successfully initiated withdrawal of ${amount} points.`, 'success'); withdrawForm.reset(); });
+            function showWithdrawMessage(text, type) { withdrawMessage.textContent = text; withdrawMessage.className = `message ${type}`; withdrawMessage.style.display = 'block'; }
+            referralLink.addEventListener('click', () => { navigator.clipboard.writeText(referralLink.textContent).then(() => alert('Referral link copied to clipboard!')).catch(err => console.error('Failed to copy text: ', err)); });
+            loadGameState(); updateUI(); showPage('tap-page');
         });
     </script>
 </body>
 </html>
-
